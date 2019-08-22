@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+<!--    <script th:href="@{/js/vue.min.js}" type="application/javascript"></script>-->
+    <!-- Bootstrap -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="/js/bootstrap.min.js"></script>
+    <!--[if lt IE 9]>
+    <meta http-equiv="refresh" content="0;ie.html" />
+    <![endif]-->
+<!--    <script>if(window.top !== window.self){ window.top.location = window.location;}</script>-->
+    <style>
+        .main {
+            width: 450px;
+            height: 400px;
+            opacity: 1;
+            padding-top: 8px;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+        <form th:action="@{/bs/rest.do}" method="post">
+                    <div class="form-group" style="padding: 0px 50px;">
+                        加班时长： <input type="text" id="restTimeInput" class="form-control" name="restTime"  />
+                    </div>
+
+
+
+                    <div class="form-group" style="padding: 0px 50px;">
+                        开始时间：  <input id="startTimeInput"   class="form-control" type="date" name="startTime" />
+                    </div>
+
+                    <div class="form-group" style="padding: 0px 50px;">
+                        结束时间： <input  id="endTimeInput"   class="form-control" type="date" name="endTime" />
+                    </div>
+
+          <div class="form-group" style="padding: 0px 50px;">
+                        加班原因：  <input  id="reasonInput"  class="form-control" type="text" name="reason" />
+                    </div>
+
+                    <div class="form-group" style="padding: 0px 50px;">
+                        <button type="submit" id="submitbtn" class="btn btn-success block full-width m-b">提交</button>
+<!--                        <span style="color: red" th:text="${errmsg}"></span>-->
+                    </div>
+        </form>
+</div>
+        <!-- Modal -->
+        <div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="myModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">提示您</h4>
+                    </div>
+                    <div class="modal-body">
+                        <h4 id="messageshow"></h4>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-dismiss="modal" class="btn btn-success" type="button">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal -->
+<script type="text/javascript" >
+    $(function () {
+        $("#submitbtn").click(function() {
+            var restTime = $("#restTimeInput").val();
+            var applyRestTime = $("#applyRestTimeInput").val();
+            var startTime = $("#startTimeInput").val();
+            var endTime = $("#endTimeInput").val();
+            var reason = $("#reasonInput").val();
+            if (restTime == null || restTime == "") {
+                $("#messageshow").html("请输入剩余调休天数");
+                $("#myModal").modal("show");
+                $("#myModal").on("hidden.bs.modal", function (e) {
+                    $("#restTimeInput").focus();
+                });
+                return false;
+            } else if (applyRestTime == null || applyRestTime == "") {
+                $("#messageshow").html("请输入申请调休天数");
+                $("#myModal").modal("show");
+                $("#myModal").on("hidden.bs.modal", function (e) {
+                    $("#applyRestTimeInput").focus();
+                });
+                return false;
+            } else if (startTime == null || startTime == "") {
+                $("#messageshow").html("请输入调休开始时间");
+                $("#myModal").modal("show");
+                $("#myModal").on("hidden.bs.modal", function (e) {
+                    $("#startTimeInput").focus();
+                });
+                return false;
+            } else if (endTime == null || endTime == "") {
+                $("#messageshow").html("请输入调休结束时间");
+                $("#myModal").modal("show");
+                $("#myModal").on("hidden.bs.modal", function (e) {
+                    $("#endTimeInput").focus();
+                });
+                return false;
+            } else if (reason == null || reason == "") {
+                $("#messageshow").html("请输入申请调休原因");
+                $("#myModal").modal("show");
+                $("#myModal").on("hidden.bs.modal", function (e) {
+                    $("#reasonInput").focus();
+                });
+                return false;
+       }
+            //     else {
+        //         $.ajax({
+        //             url: "/bs/rest.do",
+        //             type: "post",
+        //             dataType: "text",
+        //             data: {
+        //                 "restTime": restTime,
+        //                 "applyRestTime": applyRestTime,
+        //                 "startTime": startTime,
+        //                 "endTime": endTime,
+        //                 "reason": reason
+        //             },
+        //             success: function (data) {
+        //                 console.log(data);
+        //                 var result = eval('(' + data + ')');
+        //                 if (result.errres == 200) {
+        //                     window.location.href = "/bs/rest_list";
+        //                 } else {
+        //                     console.log(result);
+        //                     $("#messageshow").html(result.errmsg);
+        //                     $("#myModal").modal("show");
+        //                     $("#myModal").on("hidden.bs.modal", function (e) {
+        //                         $("#" + result.inputfocus).focus();
+        //                     });
+        //                 }
+        //             }
+        //         });
+        //     }
+
+        //
+        // $(document).keydown(function(event){
+        //     if(event.keyCode == 13){
+        //         event.preventDefault();
+        //         $("#submitbtn").click();
+        //     }
+        // });
+        });
+    });
+</script>
+</body>
+</html>

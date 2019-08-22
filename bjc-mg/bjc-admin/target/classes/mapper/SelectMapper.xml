@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjc.mapper.SelectMapper">
+
+
+    <!-- 查询全部加班记录-->
+    <select id="selectOverTime" resultType="com.bjc.entity.OverTim" >
+       select
+            user.username  name,
+            user.number  number,
+            overtime.start_time startTime,
+            overtime.end_time endTime,
+            overtime.over_time overTime,
+            overtime.reason ,
+            overtime.apply_time applyTime,
+            overtime.status
+            from tbl_bs_overtim overtime,tbl_sys_user user
+        WHERE overtime.u_id = user.u_id
+        <if test="number!=null and number!='' ">
+            and number=#{number}
+        </if>
+
+        <if test="status!=null ">
+        and overtime.status=#{status}
+        </if>
+        <if test="deptNumber != '' and deptNumber != null ">
+            and user.dept_number LIKE concat('%',#{deptNumber},'%' )
+        </if>
+        <if test="deptNumber1 != '' and deptNumber1 != null ">
+            and user.dept_number LIKE concat('%',#{deptNumber1},'%' )
+        </if>
+
+        ORDER BY startTime desc
+    </select>
+
+
+    <!-- 查询全部调休记录-->
+    <select id="selectRest" resultType="com.bjc.entity.Rest" >
+       select
+            user.username  name,
+            user.number number,
+            rest.start_time startTime,
+            rest.end_time endTime,
+            rest.apply_rest_time applyRestTime,
+            rest.reason ,
+            rest.apply_time applyTime,
+            rest.status
+        from tbl_bs_rest rest,tbl_sys_user user
+        WHERE rest.u_id=user.u_id
+        <if test="number!=null and number!='' ">
+            and number=#{number}
+        </if>
+        <if test="status!=null ">
+            and rest.status=#{status}
+        </if>
+        <if test="deptNumber != '' and deptNumber != null ">
+            and user.dept_number LIKE concat('%',#{deptNumber},'%' )
+        </if>
+        <if test="deptNumber1 != '' and deptNumber1 != null ">
+            and user.dept_number LIKE concat('%',#{deptNumber1},'%' )
+        </if>
+        ORDER BY applyTime desc
+    </select>
+
+
+<!--    &lt;!&ndash; 查询某个员工的加班记录&ndash;&gt;-->
+<!--    <select id="selectnumberOverTime" resultType="com.bjc.entity.OverTim" >-->
+<!--        select-->
+<!--                user.username name,-->
+<!--                user.number  number,-->
+<!--                overtime.start_time startTime,-->
+<!--                overtime.end_time endTime,-->
+<!--                overtime.over_time overTime,-->
+<!--                overtime.reason ,-->
+<!--                overtime.apply_time applyTime,-->
+<!--                overtime.status-->
+<!--                from tbl_bs_overtim overtime,tbl_sys_user user-->
+<!--        WHERE overtime.u_id=user.u_id  and number=#{number}-->
+<!--        ORDER BY applyTime desc-->
+<!--    </select>-->
+
+
+<!--    &lt;!&ndash; 查询某个员工的调休记录&ndash;&gt;-->
+<!--    <select id="selectRest" resultType="com.bjc.entity.Rest" >-->
+<!--           select-->
+<!--            user.username  name,-->
+<!--            user.number number,-->
+<!--            rest.start_time startTime,-->
+<!--            rest.end_time endTime,-->
+<!--            rest.apply_rest_time applyRestTime,-->
+<!--            rest.reason ,-->
+<!--            rest.apply_time applyTime,-->
+<!--            rest.status-->
+<!--        from tbl_bs_rest rest,tbl_sys_user user-->
+<!--        WHERE rest.u_id=user.u_id and and number=#{number}-->
+<!--        ORDER BY applyTime desc-->
+<!--    </select>-->
+</mapper>

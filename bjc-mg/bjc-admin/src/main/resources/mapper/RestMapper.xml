@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjc.mapper.RestMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.bjc.entity.Rest">
+        <id column="rest_id" property="restId" />
+        <result column="u_id" property="uId" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="reason" property="reason" />
+        <result column="rest_time" property="restTime"/>
+        <result column="apply_rest_time" property="applyRestTime" />
+        <result column="r_status" property="rStatus"/>
+    </resultMap>
+
+<!--	查询剩余的调休天数-->
+	<select id="restTime" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * from tbl_bs_rest where u_id=#{u_id}  order by rest_time
+    </select>
+
+    <insert id="insertAllColumn" parameterType="com.bjc.entity.Rest">
+        insert  into tbl_bs_rest(u_id, start_time, end_time, rest_time, reason, apply_rest_time) value
+            (#{uId}, #{startTime}, #{endTime},#{restTime}, #{reason}, #{applyRestTime})
+    </insert>
+
+
+<!--   按年月查询 部门-->
+    <select id="produceRest" resultType="com.bjc.entity.RestOverTime" parameterType="java.util.Map">
+        select
+        a.year,
+        a.month,
+        a.overtime  overTime ,
+        ifnull(b.applytime,0) applyRestTime,
+        a.overtime-ifnull(b.applytime,0) restTime
+        from
+        (
+            SELECT
+                DATE_FORMAT(overtim.start_time,'20%y%m') year,
+                DATE_FORMAT(overtim.start_time,'%m') month,
+                sum(overtim.over_time) overtime
+            FROM
+                tbl_bs_overtim overtim,tbl_sys_user user
+            where overtim.u_id = user.u_id and overtim.status=1
+        and (DATE_FORMAT(overtim.start_time,'20%y%m') &gt;= DATE_FORMAT(#{startTime},'20%y%m') and  DATE_FORMAT(overtim.start_time,'20%y%m') &lt; DATE_FORMAT(#{endTime},'20%y%m')  )
+            <if test="deptNumber != '' and deptNumber != null  ">
+                and user.dept_number LIKE concat('%',#{deptNumber},'%' )
+            </if>
+            <if test="deptNumber1 != '' and deptNumber1 != null  ">
+                and user.dept_number LIKE concat('%',#{deptNumber1},'%' )
+            </if>
+            GROUP BY   DATE_FORMAT(overtim.start_time,'%y'),DATE_FORMAT(overtim.start_time,'%m')
+        ) a  left join
+        (
+            SELECT
+                DATE_FORMAT(rest.start_time,'20%y%m') year,
+                DATE_FORMAT(rest.start_time,'%m') month,
+                sum(rest.apply_rest_time) applytime
+            FROM
+                tbl_bs_rest rest ,tbl_sys_user user
+            where rest.u_id = user.u_id  and rest.status=1
+        and (DATE_FORMAT(rest.start_time,'20%y%m') &gt;= DATE_FORMAT(#{startTime},'20%y%m') and  DATE_FORMAT(rest.start_time,'20%y%m') &lt; DATE_FORMAT(#{endTime},'20%y%m')  )
+            <if test="deptNumber != '' and deptNumber != null  ">
+                and user.dept_number LIKE concat('%',#{deptNumber},'%' )
+            </if>
+            <if test="deptNumber1 != '' and deptNumber1 != null  ">
+                and user.dept_number LIKE concat('%',#{deptNumber1},'%' )
+            </if>
+
+            GROUP BY  DATE_FORMAT(rest.start_time,'%y') , DATE_FORMAT(rest.start_time,'%m')
+        ) b
+        on (a.year=b.year and a.month = b.month )
+    </select>
+
+
+
+<!--    //个人-->
+    <select id="produceRestNumber" resultType="com.bjc.entity.Rest" parameterType="java.util.Map">
+        select
+            a.month,
+            a.uid,
+            a.overtime,
+            b.applytime ,
+            a.overtime-b.applytime  restTime
+        from
+        (
+            SELECT
+                users.u_id  uid,
+                DATE_FORMAT(overtim.start_time,'%m') month,
+                sum(overtim.over_time) overtime
+            FROM
+                tbl_bs_overtim overtim,tbl_sys_user users where overtim.u_id = users.u_id and users.u_id = #{number}
+            GROUP BY  DATE_FORMAT(overtim.start_time,'%m')
+        ) a,
+        (
+            SELECT
+                DATE_FORMAT(rest.start_time,'%m') month,
+                sum(rest.apply_rest_time) applytime
+            FROM
+                tbl_bs_rest rest ,tbl_sys_user users where rest.u_id = users.u_id and users.u_id = #{number}
+            GROUP BY  DATE_FORMAT(rest.start_time,'%m')
+        ) b
+        where a.month = b.month
+    </select>
+
+
+    <select id="listAll" resultMap="BaseResultMap">
+        select tbl_sys_user.username "user.username",
+                  tbl_sys_user.number "user.number",
+                  tbl_bs_rest.*
+                  from   tbl_bs_rest left  outer  join  tbl_sys_user on tbl_bs_rest.u_id=tbl_sys_user.u_id
+    </select>
+
+
+</mapper>

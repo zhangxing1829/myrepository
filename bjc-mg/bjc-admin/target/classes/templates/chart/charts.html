@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Insert title here</title>
+	<!-- Bootstrap -->
+	<link href="/css/bootstrap.min.css" rel="stylesheet">
+	<!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+	<script src="https://code.jquery.com/jquery.js"></script>
+	<!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+	<script src="/js/bootstrap.min.js"></script>
+
+	<link class="uiTheme" rel="stylesheet" type="text/css"
+		  href="../jquery-easyui-1.3.3/themes/ui-sunny/easyui.css">
+<!--	<link class="uiTheme" rel="stylesheet" type="text/css"-->
+<!--		  href="../jquery-easyui-1.3.3/themes/default/easyui.css">-->
+
+
+
+	<link rel="stylesheet" type="text/css" href="../jquery-easyui-1.3.3/themes/icon.css">
+	<script type="text/javascript" src="../jquery-easyui-1.3.3/jquery.min.js"></script>
+	<script type="text/javascript" src="../jquery-easyui-1.3.3/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="../jquery-easyui-1.3.3/locale/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="../jquery-easyui-1.3.3/jquery.cookie.js"></script>
+
+	<script type="text/javascript" src="/Highcharts-5.0.12/code/highcharts.js"></script>
+	<script type="text/javascript" src="/Highcharts-5.0.12/code/highcharts-3d.js"></script>
+	<script type="text/javascript" src="/Highcharts-5.0.12/code/modules/exporting.js"></script>
+	<script type="text/javascript" src="/Highcharts-5.0.12/code/highcharts-zh_CN.js"></script>
+	<script type="text/javascript" src="/Highcharts-5.0.12/code/themes/dark-unica.js"></script>
+	<script>
+		function searchLine(){
+
+			var deptNumber = $("#deptNumber").val();
+			var deptNumber1 = $("#deptNumber1").val();
+			var startTime=$("#startTime").val();
+			var endTime=$("#endTime").val();
+
+			if(deptNumber=='')
+			{
+				$.messager.alert("系统提示","请选择要查询的部门！");
+				return;
+			}
+
+
+			if(startTime==''||endTime=='')
+			{
+				$.messager.alert("系统提示","请选择起止时间！");
+				return;
+			}
+
+//折线图
+
+			$.post("/bs/produceRestTime.do", {deptNumber:deptNumber,deptNumber1:deptNumber1,startTime:startTime,endTime:endTime}, function(result) {
+				console.log(result);
+				$('#containerLine').highcharts({
+					chart: {
+						type: 'line',
+						//backgroundColor: '#000000'//背景色
+					},
+					colors: ['#FF33ff','#04BE02','#EF4F4F','#FF6600','#18B4ED'],//数据列颜色
+					title: {
+						style:{
+							fontFamily:'宋体',
+						},
+						text: '(加班—调休)曲线图', //设置一级标题
+						x: -20 //center
+					},
+					subtitle: {
+						text: '', //设置二级标题
+						x: -20
+					},
+					credits:{enabled: false},
+					xAxis: {
+						type:'category',
+
+						title: {
+							style:{
+								fontFamily:'宋体',
+								fontSize:'20px'
+							},
+							text: '<b>月份</b>', //设置X轴的标题
+							align: 'high'
+						},
+						//gridLineColor:'#00B2EE',
+						//gridLineWidth:'1',
+						showFirstLabel:true,
+						showLastLable:true
+					},
+					yAxis: {
+						title: {
+							style:{
+								fontFamily:'宋体',
+								fontSize:'20px'
+							},
+							text:  '<b>总时长</b>',    //设置y轴的标题
+							align: 'high'
+						},
+						labels : {
+							formatter : function() {//设置纵坐标值的样式
+								return this.value + '小时';
+							}
+						},
+						//gridLineColor:'#00B2EE',
+						//gridLineWidth:'1',
+						plotLines: [{
+							value: 0,
+							width: 1,
+							color: '#808080'
+						}],
+						min:0
+					},
+
+
+					tooltip: {
+						shared: false ,
+						formatter: function() {
+							return '<b>'+ this.series.name + '</b>: ' + this.point.y + '小时';
+						},
+					},
+
+
+					exporting: {
+						enabled: true,
+					},
+					plotOptions: {
+						line: {
+							dataLabels: {
+								enabled: true //显示每条曲线每个节点的数据项的值
+							},
+							enableMouseTracking: true,
+							marker:{
+								enable:true,
+							}
+						},
+						area: {
+							fillColor: {
+								linearGradient: {
+									x1: 0,
+									y1: 0,
+									x2: 0,
+									y2: 1
+								},
+								stops: [
+									[0, Highcharts.getOptions().colors[0]],
+									[1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+								]
+							},
+							marker: {
+								radius: 2
+							},
+							lineWidth: 1,
+							states: {
+								hover: {
+									lineWidth: 1
+								}
+							},
+							threshold: null
+						}
+					},
+					series: result
+				});
+
+//柱状图
+				var chart = new Highcharts.Chart({
+					chart: {
+						renderTo: 'containerColumn',
+						type: 'column',
+						options3d: {
+							enabled: true,
+							alpha: 0,
+							beta: 0,
+							depth: 100,
+							viewDistance: 25
+						}
+					},
+					title: {
+						text: '(加班—调休)柱状图'
+					},
+					plotOptions: {
+						column: {
+							depth: 25,
+							dataLabels: {
+								enabled: true //显示每条曲线每个节点的数据项的值
+							}
+						}
+					},
+					tooltip: {
+						pointFormat: '<b>{series.name}</b>：<b>{point.y}小时</b>'
+					},
+					xAxis: {
+						type:'category',
+						title: {
+							style:{
+								fontFamily:'宋体',
+								fontSize:'20px'
+							},
+							text: '<b>月份</b>', //设置X轴的标题
+							align:'high'
+						}
+					},
+					yAxis: {
+						title: {
+							style:{
+								fontFamily:'宋体',
+								fontSize:'20px'
+							},
+							text: '总时长' ,//设置y轴的标题
+							align:'high'
+						},
+						labels : {
+							formatter : function() {//设置纵坐标值的样式
+								return this.value + '小时';
+							}
+						},
+					},
+					series: result
+				});
+
+// //饼状图
+// 				$('#sliders input').on('input change', function () {
+// 					chart.options.chart.options3d[this.id] = this.value;
+// 					$('#alpha-value').html(chart.options.chart.options3d.alpha);
+// 					$('#beta-value').html(chart.options.chart.options3d.beta);
+// 					$('#depth-value').html(chart.options.chart.options3d.depth);
+// 					chart.redraw(false);
+// 				});
+// 				$('#alpha-value').html(chart.options.chart.options3d.alpha);
+// 				$('#beta-value').html(chart.options.chart.options3d.beta);
+// 				$('#depth-value').html(chart.options.chart.options3d.depth);
+//
+// 				for(var i=0;i<result.length;i++){
+// 					$("#containerPie").append('<div id="containerPie'+i+'" style="min-width:400px;min-height:400px"></div>');
+// 					$("#containerPie"+i).highcharts({
+// 						chart: {
+// 							type: 'pie',
+// 							options3d: {
+// 								enabled: true,
+// 								alpha: 45,
+// 								beta: 0
+// 							}
+// 						},
+// 						title: {
+// 							text: result[i].name+'：(月份—剩余调休天数)饼状图'
+// 						},
+// 						tooltip: {
+// 							pointFormat: '<b>{series.name}</b>：<b>{point.y}天</b>'
+// 						},
+// 						plotOptions: {
+// 							pie: {
+// 								allowPointSelect: true,
+// 								cursor: 'pointer',
+// 								depth: 50,
+// 								dataLabels: {
+// 									enabled: true,
+// 									format: '{point.name}'
+// 								},
+// 								showInLegend: true
+// 							}
+// 						},
+// 						series: [result[i]]
+// 					});
+// 				}
+			}, "json");
+		}
+		function searchNumber() {
+			var number = $("#number").val();
+			$.post("/bs/produceRestNumber.do", {number: number}, function (result) {
+				console.log(result);
+				$('#containerLine').highcharts({
+					chart: {
+						type: 'line'
+					},
+					colors: ['#FF33CC', '#04BE02', '#EF4F4F', '#FF6600', '#18B4ED'],
+					title: {
+						style: {
+							fontFamily: '宋体',
+						},
+						text: '(月份—剩余调休天数)曲线图', //设置一级标题
+						x: -20 //center
+					},
+					subtitle: {
+						text: '', //设置二级标题
+						x: -20
+					},
+					credits: {enabled: false},
+					xAxis: {
+
+						type: 'category',
+						title: {
+							style: {
+								fontFamily: '宋体',
+							},
+							text: '月份' //设置X轴的标题
+						},
+						gridLineColor: '#00B2EE',
+						gridLineWidth: '1',
+						showFirstLabel: true,
+						showLastLable: true
+					},
+					yAxis: {
+						title: {
+							style: {
+								fontFamily: '宋体',
+							},
+							text: '剩余调休天数' //设置y轴的标题
+						},
+						labels: {
+							formatter: function () {//设置纵坐标值的样式
+								return this.value + '天';
+							}
+						},
+						gridLineColor: '#00B2EE',
+						gridLineWidth: '1',
+						plotLines: [{
+							value: 0,
+							width: 1,
+							color: '#808080'
+						}],
+						min: 0
+					},
+					tooltip: {
+						formatter: function () {
+							return '<b>' + this.series.name + '</b><br/>剩余调休天数：' + this.point.y + '天';
+						},
+					},
+
+					exporting: {
+						enabled: true,
+					},
+					plotOptions: {
+						spline: {
+							dataLabels: {
+								enabled: true //显示每条曲线每个节点的数据项的值
+							},
+							enableMouseTracking: true,
+							marker: {
+								enable: true,
+							}
+						},
+						area: {
+							fillColor: {
+								linearGradient: {
+									x1: 0,
+									y1: 0,
+									x2: 0,
+									y2: 1
+								},
+								stops: [
+									[0, Highcharts.getOptions().colors[0]],
+									[1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+								]
+							},
+							marker: {
+								radius: 2
+							},
+							lineWidth: 1,
+							states: {
+								hover: {
+									lineWidth: 1
+								}
+							},
+							threshold: null
+						}
+					},
+					series: result
+				});
+
+//柱状图
+				var chart = new Highcharts.Chart({
+					chart: {
+						renderTo: 'containerColumn',
+						type: 'column',
+						options3d: {
+							enabled: true,
+							alpha: 0,
+							beta: 0,
+							depth: 100,
+							viewDistance: 25
+						}
+					},
+					title: {
+						text: '(月份—剩余调休天数)柱状图'
+					},
+					plotOptions: {
+						column: {
+							depth: 25,
+							dataLabels: {
+								enabled: true //显示每条曲线每个节点的数据项的值
+							}
+						}
+					},
+					tooltip: {
+						pointFormat: '<b>{series.name}</b><br/>剩余调休天数：<b>{point.y}天</b>'
+					},
+					xAxis: {
+						type: 'category',
+						title: {
+							style: {
+								fontFamily: '宋体',
+							},
+							text: '月份' //设置X轴的标题
+						}
+					},
+					yAxis: {
+						title: {
+							style: {
+								fontFamily: '宋体',
+							},
+							text: '剩余调休天数' //设置y轴的标题
+						},
+					},
+					series: result
+				});
+
+//饼状图
+// 				$('#sliders input').on('input change', function () {
+// 					chart.options.chart.options3d[this.id] = this.value;
+// 					$('#alpha-value').html(chart.options.chart.options3d.alpha);
+// 					$('#beta-value').html(chart.options.chart.options3d.beta);
+// 					$('#depth-value').html(chart.options.chart.options3d.depth);
+// 					chart.redraw(false);
+// 				});
+// 				$('#alpha-value').html(chart.options.chart.options3d.alpha);
+// 				$('#beta-value').html(chart.options.chart.options3d.beta);
+// 				$('#depth-value').html(chart.options.chart.options3d.depth);
+
+				// for (var i = 0; i < result.length; i++) {
+				// 	$("#containerPie").append('<div id="containerPie' + i + '" style="min-width:400px;min-height:400px"></div>');
+				// 	$("#containerPie" + i).highcharts({
+				// 		chart: {
+				// 			type: 'pie',
+				// 			options3d: {
+				// 				enabled: true,
+				// 				alpha: 45,
+				// 				beta: 0
+				// 			}
+				// 		},
+				// 		title: {
+				// 			text: result[i].name + '：(月份—剩余调休天数)饼状图'
+				// 		},
+				// 		tooltip: {
+				// 			pointFormat: '<b>{series.name}</b><br/>剩余调休天数：<b>{point.y}天</b>'
+				// 		},
+				// 		plotOptions: {
+				// 			pie: {
+				// 				allowPointSelect: true,
+				// 				cursor: 'pointer',
+				// 				depth: 50,
+				// 				dataLabels: {
+				// 					enabled: true,
+				// 					format: '{point.name}'
+				// 				},
+				// 				showInLegend: true
+				// 			}
+				// 		},
+				// 		series: [result[i]]
+				// 	});
+				// }
+			}, "json")
+
+		}
+
+		function resetSearch() {
+			$("#number").val("");
+			$("#deptNumber").val("");
+			$("#deptNumber1").val("");
+			$("#startTime").val("");
+			$("#endTime").val("");
+		}
+
+	</script>
+</head>
+<body>
+<div  class="form-group" style="padding:5px;">
+
+
+	部门：<select  id="deptNumber">
+			<option > </option>
+  			<option >SSBG_BU18</option>
+ 			<option >SSBG_BU19</option>
+ 			<option >SSBG_BU20</option>
+		</select>
+
+		<select id="deptNumber1">
+			<option > </option>
+			<option >DU1</option>
+  		  	<option >DU2</option>
+ 		</select>
+
+
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	开始时间：  <input id="startTime"   type="date" name="startTime" />
+	结束时间： <input  id="endTime"    type="date" name="endTime" />
+
+
+	<a href="javascript:searchLine()"  class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>&nbsp;&nbsp;&nbsp;
+	<a href="javascript:resetSearch()" class="easyui-linkbutton" iconCls="icon-reset" plain="true">清空</a>
+
+
+
+
+</div>
+<div class="easyui-tabs" style=" min-width:400px;min-height:400px;">
+	<div title="折线图" style="padding:10px">
+		<div id="containerLine" style="min-width:350px;min-height:560px"></div>
+	</div>
+	<div title="柱状图" style="padding:10px">
+		<div id="containerColumn" style="min-width:350px;min-height:560px"></div>
+
+	</div>
+<!--	<div title="饼状图" style="padding:10px" id="containerPie"></div>-->
+</div>
+</body>
+</html>
